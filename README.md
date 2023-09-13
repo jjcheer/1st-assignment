@@ -3,9 +3,9 @@ First assignment for whu mem 2023
 
 仓库中data目录下是来自某二手房网站有关武汉的3000套二手房的信息,有关字段说明如下：
 
---|--|
-------
-property_name|小区名字|
+|变量|解释|
+|--|--|
+|property_name|小区名字|
 
 property_region: 所处区域
 price_ttl: 房屋总价，单位万元
