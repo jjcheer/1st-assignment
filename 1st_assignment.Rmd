@@ -1,0 +1,154 @@
+---
+title: "第一次作业你的报告题目"
+CJKmainfont: Songti SC
+author: "your name"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    latex_engine: xelatex
+  word_document:
+    toc: yes
+  html_document:
+    code_folding: show
+    fig_caption: yes
+    fig_width: 10
+    highlight: tango
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+---
+```{r setup, include = FALSE,echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE,error = FALSE, warning = FALSE, message = FALSE,
+                      out.width = "100%", split = FALSE, fig.align = "center")
+#load library
+library(tidyverse)
+library(kableExtra)
+library(lubridate)
+library(scales)
+library(plotly)
+library(patchwork)
+library(ggrepel)
+```
+
+# 你的主要发现
+
+1. 发现1
+
+1. 发现2
+  
+1. 发现3
+    
+
+# 数据介绍
+
+本报告**链家**数据获取方式如下：
+    
+报告人在2023年9月12日获取了[链家武汉二手房网站](https://wh.lianjia.com/ershoufang/)数据。
+    
+- 链家二手房网站默认显示100页，每页30套房产，因此本数据包括3000套房产信息；
+    
+- 数据包括了页面可见部分的文本信息，具体字段及说明见作业说明。
+
+ **说明：**数据仅用于教学；由于不清楚链家数据的展示规则，因此数据可能并不是武汉二手房市场的随机抽样，结论很可能有很大的偏差，甚至可能是错误的。
+    
+```{r}
+# 载入数据和预处理
+
+lj<- read_csv("/Users/jameschen/Documents/02_Teaching/12_quantitative_thinking_R/data/2023-09-12_cleaned.csv")
+# EDA ---------------------------------------------------------------------
+
+## 如下语句可以解决画图中的中文显示问题，当然你可以用showtext包来解决
+
+theme_set(theme(text = element_text(family="Songti SC",size = 10))) #这里family设置成你系统中的中文字体名。
+
+# 做一些数据预处理，比如把字符型变成factor。
+
+```
+
+# 数据概览
+
+数据表（lj)共包括`r names(lj)`等`r ncol(lj)`个变量,共`r nrow(lj)`行。表的前10行示例如下：
+
+```{r}
+lj %>% 
+  head(10) %>%
+  kable(caption = "武汉链家二手房") %>% 
+  kable_styling()
+```
+
+各变量的简短信息：
+```{r}
+glimpse(lj)
+```
+
+各变量的简短统计：
+```{r}
+summary(lj)
+```
+
+可以看到：
+
+- 直观结论1
+
+- 直观结论2
+
+- ...
+
+# 探索性分析
+
+## 变量1的数值描述与图形
+
+发现：
+
+- 发现1
+
+- 发现2
+
+## 变量2的数值描述与图形
+
+发现：
+
+- 发现1
+
+- 发现2
+
+## 变量...的数值描述与图形
+
+发现：
+
+- 发现1
+
+- 发现2
+
+## 探索问题1
+
+发现：
+
+- 发现1
+
+- 发现2
+
+## 探索问题2
+
+发现：
+
+- 发现1
+
+- 发现2
+
+## 探索问题3
+
+发现：
+
+- 发现1
+
+- 发现2
+
+---
+
+# 发现总结
+
+用1-3段话总结你的发现。
+
+
+
