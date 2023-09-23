@@ -1,0 +1,41 @@
+---
+title: "Session2"
+author: "Wenbo Chen"
+date: "2023-09-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(e1071)
+```
+
+# 五种指标
+
+```{r}
+
+a <- rnorm(1000)
+
+
+ggplot(data.frame(x=a), aes(x)) +
+  geom_histogram(binwidth = 0.25) +
+  stat_function(fun = ~ dnorm(.x) * 0.25 *1000, color= "red")
+  
+skewness(a)
+
+```
+
+- load the image
+
+```{r}
+load("/Users/jameschen/Documents/02_Teaching/12_quantitative_thinking_R/data/lj_sh_2019.RData")
+
+skewness(lj$price_sqm)
+
+lj %>% 
+  ggplot(aes(price_sqm)) +
+  geom_histogram() 
+```
+
