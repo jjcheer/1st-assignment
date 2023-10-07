@@ -1,0 +1,277 @@
+---
+title: "session3_note"
+author: "Wenbo Chen"
+date: "2023-09-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(sampling)
+library(patchwork)
+load("/Users/jameschen/Documents/02_Teaching/12_quantitative_thinking_R/data/lj_sh_2019.RData")
+theme_set(theme(text=element_text(family="Songti SC",size=12,face = "bold")))
+
+```
+
+## 变量、随机变量
+
+```{r}
+
+```
+
+
+## 变量的分布
+
+
+## 随机抽样
+
+1. 简单随机抽样
+
+```{r}
+lj_sample <- slice_sample(lj,n=100)
+
+skimr::skim(lj_sample)
+
+lj_sample <- slice_sample(lj,prop=0.1)
+
+(p1 <- lj %>% 
+  ggplot(aes(price_sqm)) +
+  geom_histogram())
+
+(p2 <- lj_sample %>% 
+  ggplot(aes(price_sqm)) +
+  geom_histogram())
+
+p1/p2
+
+# strata sampling
+
+lj_sample_3 <- lj %>% 
+  group_by(line) %>% 
+  slice_sample(prop = 0.1) %>% 
+  ungroup()
+
+table(lj_sample_3$line)
+
+(p3 <- lj_sample_3 %>% 
+    ggplot(aes(price_sqm)) +
+    geom_histogram())
+
+p1/p2/p3
+
+library(sampling)
+
+cluster(lj,c("line"),size = 10)
+```
+
+
+
+## 4种随机抽样
+
+
+## 中心极限定理
+
+```{r}
+lj
+mean(lj$price_sqm)
+
+s1 <- slice_sample(lj,n=100)
+mean(s1$price_sqm)
+
+v <- vector()
+for(i in 1:1000) {
+  s <- slice_sample(lj, n = 100)
+  v[i] <- mean(s$price_sqm)
+}
+mean(v)
+var(v) * 100
+
+var(lj$price_sqm)
+
+hist(v)
+
+## CLT
+### simulation of clt with R
+
+set.seed(12)
+x <- vector()
+y <- rchisq(10000,1)
+
+s_step <- seq(5,50, by=5)
+par(mfrow=c(5,2))
+
+# for (i in 1:100) {
+#   sample_y <- sample(y,30)
+#   x[i] <- mean(sample_y)
+# }
+
+par(mar=c(0.1,0.1,0.1,0.1))
+for (s_size in s_step) {
+    
+  for (i in 1:100) {
+      sample_y <- sample(y,s_size)
+      x[i] <- mean(sample_y)
+    
+}
+  hist(x,main = paste0("n = ", s_size),freq = FALSE)
+  print(shapiro_test(x))
+  a <- seq(-100,100,by=1)
+  b <- dnorm(a,mean = mean(x),sd = sd(x))
+  #curve(a,b,col="blue")
+}
+
+par(mfrow= c(1,1)) # restore the parameter
+### simulation of clt with R--------------------end
+
+
+```
+
+## 正态分布
+
+```{r}
+rnorm()
+pnorm(1)
+qnorm(0.9986)
+dnorm()
+
+pnorm(1.25) - pnorm(-0.5)
+
+
+```
+
+### 认识正态分布
+
+```{r}
+a <- rnorm(1000)
+
+ggplot(data.frame(x = a), aes(x)) +
+  geom_histogram(binwidth = 0.25) +
+  stat_function(fun = ~ dnorm , args = list(mean=1,sd=1),color="red",n =100)
+
+pnorm()
+qnorm()
+dnorm(0)
+
+qnorm(0.95, 15,6)
+
+```
+
+## 卡方分布
+
+```{r}
+a <- rchisq(1000,30)
+
+ggplot(data.frame(x = a), aes(x)) +
+  geom_histogram(binwidth = 0.25) +
+  stat_function(fun = ~ dchisq(.x,30) * 0.25 * 1000, color="red")
+
+rchisq()
+pchisq()
+qchisq()
+```
+
+## t分布
+
+```{r}
+ggplot(data.frame(x=rt(1000,10)),aes(x)) +
+  #geom_histogram(binwidth = 0.25) 
+  stat_function(fun = ~dt(.x,df=10)  , color = "red") 
+  # stat_function(fun = ~ dnorm(.x) * 0.25 *1000, color = "blue")
+
+qt(0.975,seq(100,1000,10))
+
+
+
+rf
+pf()
+qf()
+df()
+
+ggplot(data.frame(x = rnorm(100)), aes(x)) +
+  geom_density() +
+  geom_function(fun = dnorm, colour = "red")
+
+base <-
+  ggplot() +
+  xlim(-5, 5)
+
+base + geom_function(fun = dnorm)
+
+base + geom_function(fun = dnorm, args = list(mean = 2, sd = .5))
+
+base + stat_function(fun = dnorm, geom = "point")
+
+base +
+  geom_function(aes(colour = "normal"), fun = dnorm) +
+  geom_function(aes(colour = "t, df = 1"), fun = dt, args = list(df = 1))
+```
+
+### 练习
+
+```{r}
+lj
+#for (i in 1:30) {
+s1 <- lj %>% 
+  group_by(line) %>% 
+  slice_sample(prop = 0.1) %>% 
+  ungroup()
+# 95% interval estimation
+
+E1 <- qnorm(0.975) * sd(s1$price_sqm) / sqrt(642)
+
+E2 <- qt(0.975,641) * sd(s1$price_sqm) / sqrt(642)
+
+print(mean(s1$price_sqm) +c(-E,E))
+#}
+t.test(s1$price_sqm)
+
+mean(s1$price_sqm)+c(-E2,E2)
+
+a <- ggplot() + xlim(-5,5)
+
+a + stat_function(fun = dnorm) + stat_function(fun = dnorm, args = list(mean=c(1,5)))
+
+lj %>% 
+  ggplot(aes(price_sqm)) +
+  geom_density() +
+  geom_function(fun = dnorm, args= list(mean=mean(lj$price_sqm),sd = sd(lj$price_sqm)), color = "red")
+
+
+base <-
+  ggplot() +
+  xlim(-5, 5)
+
+base + stat_function(fun = dnorm, geom = "point")
+
+base + stat_function(fun = dnorm, geom = "point", n = 20)
+
+base + stat_function(fun = dnorm, geom = "polygon", color = "blue", fill = "blue", alpha = 0.5)
+
+base + geom_function(fun = dnorm, n = 20)
+
+base +
+  geom_function(aes(color = "normal"), fun = dnorm) +
+  geom_function(aes(color = "t, df = 1"), fun = dt, args = list(df = 1))
+
+base + geom_function(fun = function(x) 0.5*exp(-abs(x)))
+
+base + geom_function(fun = ~ 0.5*exp(-abs(.x)))
+
+ggplot(data.frame(x = rnorm(100)), aes(x)) +
+geom_density() +
+geom_function(fun = dnorm, colour = "red", xlim=c(-7, 7))
+```
+
+
+
+
+
+
+
+
+
+
+
+
