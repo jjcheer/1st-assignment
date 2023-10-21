@@ -1,0 +1,109 @@
+---
+title: "Sessionn-5-note"
+author: "Wenbo Chen"
+date: "2023-10-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+# read data
+lj <- read_csv("/Users/jameschen/Documents/04_Learning/R/1st-assignment/data/2023-09-12_cleaned.csv")
+
+```
+
+## 复习
+
+```{r}
+1-(pnorm(7.5)-pnorm(-4.5)) 
+```
+
+
+## 作业讲评
+
+## 区间估计
+
+```{r}
+mean(lj$price_sqm)
+var(lj$price_sqm)
+sd(lj$price_sqm)
+
+# 1. 抽样，根据抽样来做区间估计
+set.seed(123)
+lj_s <- sample_n(lj,100)
+
+(sample_mean <- mean(lj_s$price_sqm))
+
+# 1.1 假定方差已知
+(E <- qnorm(0.975)*sd(lj$price_sqm)/sqrt(100))
+
+(ci_1 <- sample_mean + c(-E, E))
+
+# 1.2 假定方差未知
+(E2 <- qt(0.975,99) *sd(lj_s$price_sqm)/sqrt(100))
+(ci_2 <- sample_mean + c(-E2, E2))
+
+t.test(lj_s$price_sqm)
+```
+
+
+## 一个总体均值、比例
+
+## 总体方差的估计
+
+```{r}
+bustime <- read_csv("/Users/jameschen/Documents/02_Teaching/01_Statistics/2022/DataCSV/CH 11/BusTimes.csv")
+
+bustime <- bustime %>% 
+  select(Times)
+
+bus_var <- var(bustime$Times,na.rm = TRUE)
+
+(24-1) * bus_var/qchisq(0.975,23)
+(24-1) * bus_var/qchisq(0.025,23)
+
+qchisq()
+```
+
+
+
+## 两个总体均值之差
+
+## 两个总体比例之差
+
+## 两个总体、匹配样本
+
+
+##
+
+```{r}
+1-pnorm(12-1.645*3.2/sqrt(40),11.9,3.2/sqrt(40))
+
+x <- 1-pnorm(12-1.645*3.2/sqrt(40),seq(10,12,0.1),3.2/sqrt(40))
+y <- seq(10,12,0.1)
+
+plot(y,x,type="l")
+
+lj
+
+# 检验靠近地铁和不靠近地铁的二手房均价是否有显著差异。
+# t.test()
+levels(lj$near_subway)
+
+glimpse(lj$near_subway)
+
+lj <- lj %>% 
+  mutate(near_subway = ifelse(near_subway == "近地铁",1,0))
+
+lj <- lj %>% 
+  mutate(near_subway = as.factor(near_subway))
+
+t.test(lj$price_sqm ~ lj$near_subway)
+
+
+
+t.test
+```
+
