@@ -76,7 +76,7 @@ qchisq()
 ## 两个总体、匹配样本
 
 
-##
+## 关于均值的检验
 
 ```{r}
 1-pnorm(12-1.645*3.2/sqrt(40),11.9,3.2/sqrt(40))
@@ -98,12 +98,48 @@ lj <- lj %>%
   mutate(near_subway = ifelse(near_subway == "近地铁",1,0))
 
 lj <- lj %>% 
+  mutate(near_subway = ifelse(is.na(near_subway),0,1))
+
+lj <- lj %>% 
   mutate(near_subway = as.factor(near_subway))
 
 t.test(lj$price_sqm ~ lj$near_subway)
 
-
-
 t.test
+```
+
+## 关于比例的检验
+
+```{r}
+table(lj$near_subway)
+
+lj$near_subway
+prop.test(table(lj$near_subway))
+```
+
+## 关于方差的检验
+
+```{r}
+library(EnvStats)
+
+varTest(bustime[1:24,1]$Times,sigma.squared = 4)
+```
+
+## 两个样本方差的检验
+
+```{r}
+var.test(lj$price_sqm ~ lj$near_subway) # 方差不相等。
+```
+
+## 正态分布的检验
+```{r}
+chemline <- read_csv("/Users/jameschen/Public/DataCSV/CH 12/Chemline.csv") %>% 
+  dplyr::select(Score)
+
+shapiro.test(chemline$Score)
+ks.test(chemline$Score,"pnorm",mean = mean(chemline$Score), sd = sd(chemline$Score))
+
+# we can also test it manually
+
 ```
 
