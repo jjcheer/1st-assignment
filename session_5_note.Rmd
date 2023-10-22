@@ -75,6 +75,17 @@ qchisq()
 
 ## 两个总体、匹配样本
 
+```{r}
+d1 <- tibble(
+  upx = c(32,30,19,16,15,18,14,10,7,16),
+  intex = c(25,24,15,15,13,15,15,8,9,11)
+)
+d1
+
+t.test(d1$upx,d1$intex,paired = TRUE)
+```
+
+
 
 ## 关于均值的检验
 
@@ -131,15 +142,305 @@ varTest(bustime[1:24,1]$Times,sigma.squared = 4)
 var.test(lj$price_sqm ~ lj$near_subway) # 方差不相等。
 ```
 
-## 正态分布的检验
+# 四类应用
+
+## 分类变量与分类变量，卡方检验
+
+```{r}
+titanic_gender <- matrix(data = c(338,316,1352,109),nrow = 2, byrow = TRUE,
+                         dimnames = list(c("survive","die"),c("male","female")))
+
+chisq.test(titanic_gender,correct = TRUE)
+
+(338-552.58)^2/522.58 + (316-131.42)^2/131.42 + (1352- 1167.42)^2/1167.42 + (109-293.58)^2/293.58
+
+qchisq(0.95,1)
+```
+
+
+### 独立性检验
+
+### 拟合优度检验
+
+### 关于正态分布的检验
 ```{r}
 chemline <- read_csv("/Users/jameschen/Public/DataCSV/CH 12/Chemline.csv") %>% 
   dplyr::select(Score)
 
+chemline
+
+# 手动方法
+
+qnorm(seq(0.1,0.9,0.1),mean=mean(chemline$Score),sd=sd(chemline$Score))
+
 shapiro.test(chemline$Score)
 ks.test(chemline$Score,"pnorm",mean = mean(chemline$Score), sd = sd(chemline$Score))
+
 
 # we can also test it manually
 
 ```
+
+## 分类变量与数值变量：方差分析
+
+```{r}
+# Is larger cars safer?
+car_crash <- tibble(
+  small = c(44,43,44,54,38,43,42,45,44,50),
+  medium = c(41,49,43,41,47,42,37,43,44,34),
+  large = c(32,37,38,45,37,33,38,45,43,42)
+)
+
+car_crash <- car_crash %>%
+  pivot_longer(everything(), names_to = c("car_type"), values_to = "crash") %>% 
+  mutate(car_type = factor(car_type))
+
+# the boxplot
+car_crash %>% 
+  ggplot(aes(car_type,crash)) +
+  geom_boxplot() +
+  xlab("Car type")
+
+# F-test
+
+av = aov(crash ~ car_type, data = car_crash)
+summary(av)
+
+# perform Tukey's test
+TukeyHSD(av,conf.level = 0.95)
+plot(TukeyHSD(av,conf.level = 0.95), las = 1 )
+```
+
+### 双因素方差分析
+
+```{r}
+car_crash <- tibble(
+  small = c(44,54,43,43,44,42),
+  medium = c(41,49,47,43,37,34),
+  large = c(32,45,42,37,38,33),
+  region =c("Foreign","Foreign","Foreign","Domestic","Domestic","Domestic")
+)
+
+car_crash <- car_crash %>%
+  pivot_longer(c("small","medium","large"), names_to = c("car_type"), values_to = "crash") %>% 
+  mutate(car_type = factor(car_type))
+
+tw_anova <-aov(crash ~ region + car_type,data = car_crash)
+summary(tw_anova)
+
+tw_anova <-aov(crash ~ region*car_type,data = car_crash)
+summary(tw_anova)
+
+with(car_crash, {
+interaction.plot(region,car_type,crash,type="b",
+                 col=c('red',"blue"), pch = c(16,18),
+                 main = "Interaction between region and car_type")
+})
+
+```
+
+```{r}
+#wine, meat and taste
+
+
+taste <- tibble(
+  red_meet = c(10,9,10,3,3,2),
+  chicken = c(4,4,2,6,5,7),
+  fish = c(3,2,4,8,6,7),
+  wine =c("red_wine","red_wine","red_wine","white_wine","white_wine","white_wine")
+)
+
+taste <- taste %>%
+  pivot_longer(c("red_meet","chicken","fish"), names_to = c("meet_type"), values_to = "level") %>% 
+  mutate(meet_type = factor(meet_type))
+
+# tw two w...双因素变量
+tw_anova <-aov(level ~ wine + meet_type,data = taste)
+summary(tw_anova)
+
+# 交互作用 * meet_type 交互项
+tw_anova_withinteraction <-aov(level ~ wine * meet_type,data = taste)
+summary(tw_anova_withinteraction)
+
+# 交互作用图，没有交叉，交互作用不显著
+with(taste, {
+interaction.plot(wine,meet_type,level,type="b",
+                 col=c('red',"blue"), pch = c(16,18),
+                 main = "Interaction between wine and meet_type")
+})
+
+
+```
+
+
+## 数值变量与数值变量：回归分析
+
+```{r}
+cor_demo <- read_csv("../data/correlation.csv") %>% 
+  dplyr::select(x,y)
+
+cor_demo
+
+cor(cor_demo$x,cor_demo$y) # the correlation coef is pretty much low.
+
+cor.test(cor_demo$x,cor_demo$y) # not significant
+
+plot(cor_demo$x,cor_demo$y)
+#9. simple linear regression ------------------------------------------------
+
+slr1 <- tibble(
+  x=c(1,2,3,4,5),
+  y=c(3,7,5,11,14)
+)
+
+#1  scatter plot
+plot(slr1$x,slr1$y)
+
+#2. 
+b1 <- sum((slr1$x-mean(slr1$x))*(slr1$y-mean(slr1$y)))/sum((slr1$x-mean(slr1$x))^2)
+b0 <- mean(slr1$y)-b1*mean(slr1$x)
+
+# predict
+y <- b0+b1*4
+
+slr1_model <- lm(y ~ x, data = slr1)
+
+summary(slr1_model)
+plot(slr1$x,slr1_model$residuals) # too small sample size.
+
+# or
+plot(slr1_model)
+
+
+# Estimated Simple Regression Equation
+
+# Coefficient of Determination
+
+# Significance Test for Linear Regression
+
+# Confidence Interval for Linear Regression
+
+# Prediction Interval for Linear Regression
+
+# Residual Plot
+
+# Standardized Residual
+
+# Normal Probability Plot of Residuals
+
+
+#10. Multiple Linear Regression ----------------------------------------------
+
+# state.x77 dataset as an example
+
+states <- as.data.frame(state.x77[,c("Murder", "Population", "Illiteracy", "Income", "Frost")])
+
+library(GGally)
+
+ggpairs(states)
+
+# fit the model
+fit <- lm(Murder ~ Population + Illiteracy + Income + Frost,
+          data=states)
+
+summary(fit)
+
+# regression evluation
+par(mfrow = c(2,2))
+
+plot(fit)
+
+## using gvlma to evaluate the assumption
+library(gvlma)
+
+gvmodel <- gvlma(fit)
+summary(gvmodel)
+
+
+
+## 多重共线性
+library(car)
+vif(fit)
+
+## 三类点
+library(car)
+
+influencePlot(fit, id.method="identify")
+
+# comparison between models
+
+fit1 <- lm(Murder ~ Population + Illiteracy + Income + Frost,
+           data=states)
+
+fit2 <- lm(Murder ~ Population + Illiteracy, data=states)
+
+anova(fit2,fit1)
+
+# AIC criteria
+
+AIC(fit1,fit2)
+
+# variable selection
+
+
+fit <- lm(Murder ~ Population + Illiteracy + Income + Frost,
+            data=states)
+
+stepAIC(fit, direction = "backward")
+
+# exercise
+
+# 检验各条线路的均价是否存在显著差别
+
+lj_line_aov <- aov(price_sqm ~ line, data = lj)
+
+summary(lj_line_aov)
+
+# 用除总价以外的其他变量预测平均房价
+
+lj_mlr <- lm(price_sqm ~ line + station + bedrooms + livingrooms +building_area
+             + has_elevator + decoration + building_height + building_year +
+               building_style, data = lj)
+summary(lj_mlr)
+
+plot(lj_mlr)
+# Estimated Multiple Regression Equation
+
+# Multiple Coefficient of Determination
+
+# Adjusted Coefficient of Determination
+
+# Significance Test for MLR
+
+# Confidence Interval for MLR
+
+# Prediction Interval for MLR
+
+
+
+
+#11. Logistic Regression -----------------------------------------------------
+
+library(readxl)
+
+d1<- read_excel("/Users/jameschen/Documents/02_Teaching/09_BI/2020/ExcelDemo/Simmons.xlsx",
+                col_names = TRUE,sheet=1)
+d_logit<-glm(Coupon~Spending + Card,
+             data = d1,
+             family = binomial)
+summary(d_logit)
+
+plot(d_logit)
+
+
+# predict the probability
+
+(predict_odd <- predict(d_logit,data=d1))
+
+(predict_d <- predict(d_logit,data=d1,type = "response"))
+```
+
+
+## 数值变量与分类变量：logit回归
+
 
