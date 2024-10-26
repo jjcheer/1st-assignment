@@ -1,5 +1,5 @@
 # 1st-assignment
-First assignment for whu mem 2023
+First assignment for whu mem 2024
 
 仓库中data目录下是来自某二手房网站有关武汉的3000套二手房的信息,有关字段说明如下：
 
@@ -28,5 +28,5 @@ First assignment for whu mem 2023
 
 要求：
 1. 使用Rmarkdown或者Quarto完成数据分析报告，并导出为pdf。需要在仓库里同时提交markdown文件和pdf文件。
-2. 提交截止日期10月7日。
+2. 提交截止日期10月31日。
 
